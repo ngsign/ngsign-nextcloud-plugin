@@ -1,0 +1,1 @@
+<div class="section"><h2><?php p($l->t('NGSign signature')); ?></h2><p><?php p($l->t('Your signature has been processed. The signed document will be added to its original Nextcloud folder shortly.')); ?></p><p><a class="button primary" href="<?php p(\OC::$server->getURLGenerator()->linkToRoute('files.view.index')); ?>"><?php p($l->t('Back to Files')); ?></a></p></div>

@@ -1,0 +1,12 @@
+<?php
+declare(strict_types=1);
+namespace OCA\NGSign\Service;
+use OCP\IConfig;
+class PendingTransactionStore {
+	private const APP_ID = 'ngsign'; private const KEY = 'pending_transactions';
+	public function __construct(private IConfig $config) {}
+	/** @param array<string, mixed> $transaction */ public function add(array $transaction): void { $all = $this->all(); $all[$transaction['transactionId']] = $transaction; $this->save($all); }
+	/** @return array<string, array<string, mixed>> */ public function all(): array { $data = json_decode($this->config->getAppValue(self::APP_ID, self::KEY, '{}'), true); return is_array($data) ? $data : []; }
+	public function remove(string $id): void { $all = $this->all(); unset($all[$id]); $this->save($all); }
+	/** @param array<string, array<string, mixed>> $all */ private function save(array $all): void { $this->config->setAppValue(self::APP_ID, self::KEY, json_encode($all, JSON_THROW_ON_ERROR)); }
+}

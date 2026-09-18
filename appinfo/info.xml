@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>ngsign</id>
+    <name>NGSign</name>
+    <summary>Send PDF files to NGSign for electronic signature</summary>
+    <description>Adds a Sign with NGSign action to PDF files in Nextcloud Files.</description>
+    <version>0.1.0</version>
+    <licence>AGPL</licence>
+    <author>NGSign</author>
+    <namespace>NGSign</namespace>
+    <category>tools</category>
+    <dependencies>
+        <nextcloud min-version="30" max-version="34" />
+    </dependencies>
+    <settings>
+        <admin>OCA\NGSign\Settings\Admin</admin>
+    </settings>
+</info>

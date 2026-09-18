@@ -1,0 +1,13 @@
+.ngsign-modal-overlay { align-items:center; background:rgba(0,0,0,.45); display:flex; inset:0; justify-content:center; position:fixed; z-index:10000; }
+.ngsign-modal { background:var(--color-main-background, #fff); border-radius:8px; box-shadow:0 8px 30px rgba(0,0,0,.35); max-width:850px; padding:28px; position:relative; width:calc(100% - 32px); }
+.ngsign-modal h2 { margin-top:0; }
+.ngsign-close { background:transparent; border:0; font-size:28px; position:absolute; right:12px; top:8px; }
+.ngsign-signer-row { align-items:center; display:grid; gap:8px; grid-template-columns:auto 1.1fr 1fr 1fr 1.4fr 1fr; margin:8px 0; }
+.ngsign-signer-row input { min-width:0; width:100%; }
+.ngsign-remove-signer { align-self:center; border:0; border-radius:50%; color:var(--color-text-maxcontrast); font-size:20px; height:32px; min-width:32px; padding:0; }
+.ngsign-modal footer { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; }
+.ngsign-status { min-height:20px; }
+.ngsign-success { min-height:110px; padding:18px 0; text-align:center; }
+.ngsign-debug { margin-top:12px; text-align:left; }
+.ngsign-debug pre { background:var(--color-background-dark, #eee); font-size:12px; max-height:300px; overflow:auto; padding:10px; white-space:pre-wrap; word-break:break-word; }
+@media (max-width: 700px) { .ngsign-signer-row { grid-template-columns:1fr 1fr; } }

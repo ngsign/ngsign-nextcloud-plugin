@@ -1,0 +1,29 @@
+{
+  "name": "ngsign-nextcloud-plugin",
+  "private": true,
+  "scripts": {
+    "build": "webpack --node-env production",
+    "package-app": "npm run build && sh scripts/package-app.sh"
+  },
+  "dependencies": {
+    "@nextcloud/files": "^4.0.0",
+    "@nextcloud/l10n": "^3.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@nextcloud/webpack-vue-config": "^7.0.4",
+    "babel-loader": "^10.1.1",
+    "css-loader": "^7.1.5",
+    "minimizer-webpack-plugin": "^5.10.1",
+    "node-polyfill-webpack-plugin": "^4.0.0",
+    "sass": "^1.104.1",
+    "sass-loader": "^17.0.1",
+    "style-loader": "^4.0.0",
+    "ts-loader": "^9.6.2",
+    "vue": "^3.5.0",
+    "vue-loader": "^17.4.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^6.0.0"
+  }
+}
