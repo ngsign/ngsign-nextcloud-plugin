@@ -86,6 +86,9 @@ const openDialog = (node) => {
 		const submit = form.querySelector('[type="submit"]')
 		const signers = [...overlay.querySelectorAll('.ngsign-signer-row')].map((row) => Object.fromEntries([...row.querySelectorAll('input')].map((input) => [input.name, input.value.trim()])))
 		submit.disabled = true
+		submit.dataset.label = submit.textContent
+		submit.textContent = t('ngsign', 'Sending…')
+		status.classList.remove('ngsign-status-error')
 		status.textContent = t('ngsign', 'Sending document to NGSign…')
 		try {
 			const response = await fetch(OC.generateUrl('/apps/ngsign/signature/launch'), { method: 'POST', headers: { 'Content-Type': 'application/json', requesttoken: OC.requestToken }, body: JSON.stringify({ path: relativePath(node), signers }) })
@@ -99,15 +102,21 @@ const openDialog = (node) => {
 				window.location.assign(result.signingUrl)
 				return
 			}
-			overlay.querySelector('#ngsign-title').textContent = 'Dossier de signature lancé avec succès'
-			overlay.querySelector('.ngsign-intro').remove()
-			form.innerHTML = `<div class="ngsign-success"><p>${text(t('ngsign', 'Signature transaction launched. Invitations have been sent.'))}</p><footer><button type="button" class="primary ngsign-done">${text(t('ngsign', 'Close'))}</button></footer></div>`
-			showDebug(form.querySelector('.ngsign-success'), result.debug)
-			form.querySelector('.ngsign-done').addEventListener('click', close)
+			const modal = overlay.querySelector('.ngsign-modal')
+			modal.classList.add('ngsign-modal-success')
+			modal.innerHTML = `<button type="button" class="ngsign-close" aria-label="${text(t('ngsign', 'Close'))}">×</button>
+				<div class="ngsign-success-icon" aria-hidden="true">✓</div>
+				<h2 id="ngsign-title">${text(t('ngsign', 'Signature request sent'))}</h2>
+				<p>${text(t('ngsign', 'Your document has been sent to NGSign. Signers will receive an email invitation to sign it.'))}</p>
+				<footer><button type="button" class="primary ngsign-done">${text(t('ngsign', 'Close'))}</button></footer>`
+			showDebug(modal, result.debug)
+			modal.querySelectorAll('.ngsign-close,.ngsign-done').forEach((button) => button.addEventListener('click', close))
 		} catch (error) {
+			status.classList.add('ngsign-status-error')
 			status.textContent = error.message
 			showDebug(status, error.debug)
 			submit.disabled = false
+			submit.textContent = submit.dataset.label
 		}
 	})
 	overlay.querySelector('input').focus()

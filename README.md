@@ -78,10 +78,31 @@ L’image sera publiée sous `<DOCKERHUB_USERNAME>/nextcloud-ngsign:0.1.0` et `:
 
 1. `POST /protected/transaction/pdfs` avec le PDF en Base64.
 2. `POST /protected/transaction/{transactionId}/launch` avec un `sigConf` par signataire : signature `CERTIFIED_TIMESTAMP`, mode `BY_MAIL`, OTP `NONE`.
+3. `GET /any/transaction/{transactionId}` pour lire le statut de la transaction et l'état de chaque signataire (utilisé par le bouton **Check status** et par le cron).
+4. `GET /any/transaction/{transactionId}/pdfs/{documentId}` pour récupérer le PDF signé une fois la transaction au statut `SIGNED`.
+5. `POST /protected/transaction/{transactionId}/cancel` pour annuler une transaction qui n'est pas encore signée.
 
 Le bearer token n’est jamais exposé au navigateur. Le contrôleur lit le fichier depuis l’espace du seul utilisateur connecté avant de le transmettre à NGSign.
 
-La durée d'expiration est configurable dans les paramètres NGSign (15 jours par défaut). Elle est envoyée à NGSign avec `expirationDate`; le cron local cesse aussi tout polling après cette date.
+La durée d'expiration est configurable dans les paramètres NGSign (15 jours par défaut). Elle est envoyée à NGSign avec `expirationDate`; le cron local cesse aussi tout polling après cette date et supprime la transaction expirée de son suivi local.
+
+## Page Transactions
+
+Accessible depuis l'entrée de navigation **NGSign** (`/apps/ngsign/transactions`), cette page liste les transactions de signature lancées par l'utilisateur connecté :
+
+- **Statistiques** : total, en cours, signées.
+- **Tableau** : document, statut (avec badge coloré Pending/Signed/Refused/Cancelled), liste des signataires avec leur statut individuel et le prochain signataire attendu, date de création, date d'expiration, actions.
+- **Pagination** : 10 transactions par page, la plus récente en premier.
+- **Actions par ligne** :
+  - **Check status** — interroge NGSign en direct ; se désactive une fois la transaction `SIGNED`.
+  - **Cancel** — annule la transaction auprès de NGSign ; disponible tant que le statut n'est ni `SIGNED` ni `CANCELLED`, avec confirmation avant l'appel.
+  - **Download** — actif uniquement une fois le PDF signé effectivement récupéré depuis NGSign (voir cron ci-dessous).
+
+Le service `TransactionSyncService` (`lib/Service/TransactionSyncService.php`) centralise la logique appelée à la fois par le bouton **Check status** et par le cron : rafraîchir le statut et les signataires, télécharger et renommer le PDF signé (`signed_<nom original>`) dès que la transaction passe à `SIGNED`, puis notifier le créateur.
+
+### Notifications
+
+Dès qu'une transaction passe au statut `SIGNED`, le créateur reçoit une notification Nextcloud (cloche + centre de notifications) l'invitant à consulter le document signé, avec lien direct vers la page Transactions. L'envoi est unique par transaction (marqueur `notifiedAt` interne), qu'il soit déclenché par un check manuel ou par le cron.
 
 ### Diagnostic NGSign
 
@@ -89,4 +110,4 @@ Dans **Administration → Paramètres supplémentaires → NGSign**, activez **D
 
 ## À adapter selon votre tenant
 
-La position de signature initiale reprend la collection Postman fournie : page 1, `xAxis: 81`, `yAxis: 44.28125`. Si l’API de votre tenant renvoie un format différent à l’upload, ajuster l’extraction des identifiants dans `lib/Service/NGSignClient.php`.
+La position de signature initiale reprend la collection Postman fournie : page 1, `xAxis: 81`, `yAxis: 44.28125`. Si l’API de votre tenant renvoie un format différent (upload, statut, annulation…), ajuster les appels et l'extraction des identifiants dans `lib/Service/NGSignClient.php`.

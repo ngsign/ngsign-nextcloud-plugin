@@ -80,19 +80,54 @@ class NGSignClient {
 
 	/** @return array<string, mixed> */
 	public function getTransaction(string $transactionId): array {
-		$baseUrl = rtrim($this->config->getAppValue(self::APP_ID, 'base_url'), '/');
-		return $this->request('GET', $baseUrl . '/any/' . rawurlencode($transactionId), [], '');
+		$baseUrl = rtrim($this->config->getAppValue(self::APP_ID, 'base_url', 'https://sandbox.ng-sign.com/server'), '/');
+		$token = trim($this->config->getAppValue(self::APP_ID, 'api_token'));
+		// The status lookup lives under /any/transaction/{id}, not /protected/transaction/{id}.
+		$response = $this->clientService->newClient()->get($baseUrl . '/any/transaction/' . rawurlencode($transactionId), ['headers' => ['Authorization' => 'Bearer ' . $token], 'timeout' => 30, 'http_errors' => false]);
+		if ($response->getStatusCode() >= 400) throw new \RuntimeException('NGSign returned HTTP ' . $response->getStatusCode() . ' while checking transaction status.');
+		$data = json_decode((string)$response->getBody(), true);
+		return is_array($data) ? $data : [];
+	}
+
+	public function cancelTransaction(string $transactionId): void {
+		$baseUrl = rtrim($this->config->getAppValue(self::APP_ID, 'base_url', 'https://sandbox.ng-sign.com/server'), '/');
+		$token = trim($this->config->getAppValue(self::APP_ID, 'api_token'));
+		$response = $this->clientService->newClient()->post($baseUrl . '/protected/transaction/' . rawurlencode($transactionId) . '/cancel', ['headers' => ['Authorization' => 'Bearer ' . $token, 'Content-Type' => 'application/json'], 'body' => '{}', 'timeout' => 30, 'http_errors' => false]);
+		if ($response->getStatusCode() >= 400) {
+			$data = json_decode((string)$response->getBody(), true);
+			$message = is_array($data) && !empty($data['message']) ? (string)$data['message'] : 'NGSign returned HTTP ' . $response->getStatusCode() . ' while cancelling the transaction.';
+			throw new \RuntimeException($message);
+		}
 	}
 
 	public function downloadSignedDocument(string $transactionId, string $documentId): string {
-		$baseUrl = rtrim($this->config->getAppValue(self::APP_ID, 'base_url'), '/');
-		$response = $this->clientService->newClient()->get($baseUrl . '/any/' . rawurlencode($transactionId) . '/pdfs/' . rawurlencode($documentId), ['timeout' => 60, 'http_errors' => false]);
+		$baseUrl = rtrim($this->config->getAppValue(self::APP_ID, 'base_url', 'https://sandbox.ng-sign.com/server'), '/');
+		$response = $this->clientService->newClient()->get($baseUrl . '/any/transaction/' . rawurlencode($transactionId) . '/pdfs/' . rawurlencode($documentId), ['timeout' => 60, 'http_errors' => false]);
 		if ($response->getStatusCode() >= 400) throw new \RuntimeException('NGSign returned HTTP ' . $response->getStatusCode() . ' while downloading the signed PDF.');
 		return (string)$response->getBody();
 	}
 
+	/**
+	 * @param array<string, mixed> $transactionData the payload returned by getTransaction()
+	 * @return array{signers: list<array{name: string, email: string, status: string}>, nextSigner: ?string}
+	 */
+	public function extractSigners(array $transactionData): array {
+		$rawSigners = $transactionData['object']['signers'] ?? [];
+		$signers = [];
+		$nextSigner = null;
+		foreach ((is_array($rawSigners) ? $rawSigners : []) as $entry) {
+			$signer = is_array($entry) ? ($entry['signer'] ?? []) : [];
+			$name = trim(($signer['firstName'] ?? '') . ' ' . ($signer['lastName'] ?? ''));
+			$name = $name !== '' ? $name : (string)($signer['email'] ?? 'Signer');
+			$status = (string)($entry['status'] ?? 'PENDING');
+			if ($nextSigner === null && $status !== 'SIGNED' && $status !== 'REFUSED') $nextSigner = $name;
+			$signers[] = ['name' => $name, 'email' => (string)($signer['email'] ?? ''), 'status' => $status];
+		}
+		return ['signers' => $signers, 'nextSigner' => $nextSigner];
+	}
+
 	public function signingUrl(string $nextSigner, string $transactionId, string $landingUrl): string {
-		$serverUrl = preg_replace('#/server$#', '', rtrim($this->config->getAppValue(self::APP_ID, 'base_url'), '/'));
+		$serverUrl = preg_replace('#/server$#', '', rtrim($this->config->getAppValue(self::APP_ID, 'base_url', 'https://sandbox.ng-sign.com/server'), '/'));
 		return $serverUrl . '/pds/#/transaction/sign/' . rawurlencode($nextSigner) . '?uuid=' . rawurlencode($transactionId) . '&url=' . rawurlencode($landingUrl . '?transaction=' . rawurlencode($transactionId));
 	}
 

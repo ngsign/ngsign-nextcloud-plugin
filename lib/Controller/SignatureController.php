@@ -27,7 +27,7 @@ class SignatureController extends Controller {
 			if (!$node instanceof \OCP\Files\File) throw new \RuntimeException('The selected file could not be read.');
 			$this->validateSigners($signers);
 			$result = $this->ngsign->launch($node->getName(), $node->getContent(), $signers);
-			$this->pendingTransactions->add(['transactionId' => $result['transactionId'], 'documentId' => $result['documentId'], 'ownerUid' => $user->getUID(), 'path' => ltrim($path, '/'), 'name' => $node->getName(), 'expiresAt' => $result['expiresAt']]);
+			$this->pendingTransactions->add(['transactionId' => $result['transactionId'], 'documentId' => $result['documentId'], 'ownerUid' => $user->getUID(), 'path' => ltrim($path, '/'), 'name' => $node->getName(), 'status' => 'PENDING', 'createdAt' => time(), 'expiresAt' => $result['expiresAt']]);
 			$response = ['status' => 'ok'] + $result;
 			$currentEmail = strtolower((string)$user->getEMailAddress());
 			if ($currentEmail !== '' && strtolower((string)($signers[0]['email'] ?? '')) === $currentEmail && is_string($result['nextSigner']) && $result['nextSigner'] !== '') {
