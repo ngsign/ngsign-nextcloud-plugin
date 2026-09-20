@@ -1,113 +1,113 @@
-# NGSign pour Nextcloud
+# NGSign for Nextcloud
 
-Cette application ajoute l’action **Signer avec NGSign** aux PDF dans l’application Files. L’utilisateur sélectionne l’action, renseigne un ou plusieurs signataires, puis le serveur Nextcloud transmet le document à NGSign et lance une transaction `BY_MAIL`.
+This app adds the **Sign with NGSign** action to PDFs in the Files app. The user selects the action, enters one or more signers, and the Nextcloud server sends the document to NGSign and starts a `BY_MAIL` transaction.
 
-## Livrables
+## Deliverables
 
-| Livrable | Usage |
+| Deliverable | Purpose |
 | --- | --- |
-| Source de l’app `ngsign` | Installer sur une instance Nextcloud self-hosted existante. |
-| Archive `dist/ngsign-<version>.tar.gz` | Livraison autonome au client. |
-| Image Docker Hub `nextcloud-ngsign` | Déployer Nextcloud et NGSign ensemble. |
+| `ngsign` app source | Install on an existing self-hosted Nextcloud instance. |
+| `dist/ngsign-<version>.tar.gz` archive | Standalone customer delivery. |
+| `nextcloud-ngsign` Docker Hub image | Deploy Nextcloud and NGSign together. |
 
-## Installation sur une instance Nextcloud existante
+## Installation on an existing Nextcloud instance
 
-Depuis le clone du dépôt, générer l’archive sans les sources de développement :
+From the repository clone, generate the archive without development sources:
 
 ```sh
 npm ci
 npm run package-app
 ```
 
-Extraire `dist/ngsign-<version>.tar.gz` sous le répertoire `custom_apps` de l’instance ; le dossier final doit être `<nextcloud>/custom_apps/ngsign`. Puis activer l’app :
+Extract `dist/ngsign-<version>.tar.gz` into the instance’s `custom_apps` directory; the final directory must be `<nextcloud>/custom_apps/ngsign`. Then enable the app:
 
 ```sh
 sudo -u www-data php occ app:enable ngsign
 ```
 
-L’utilisateur du serveur web doit pouvoir lire le dossier. Dans **Administration → Paramètres supplémentaires → NGSign**, définir l’URL NGSign, le token et l’expiration. Activez le cron Nextcloud : le suivi des signatures terminées en dépend.
+The web-server user must be able to read the directory. Under **Administration → Additional settings → NGSign**, configure the NGSign URL, token, and expiration period. Enable the Nextcloud cron job: it is required to track completed signatures.
 
-## Déploiement Docker Hub
+## Docker Hub deployment
 
-Créer un fichier `.env` à partir de `.env.example`, en définissant au minimum les mots de passe, `NEXTCLOUD_TRUSTED_DOMAINS`, et l’image voulue :
+Create a `.env` file from `.env.example`, defining at least the passwords, `NEXTCLOUD_TRUSTED_DOMAINS`, and the desired image:
 
 ```sh
 IMAGE_NAME=<dockerhub-user>/nextcloud-ngsign:0.1.0
 docker compose --env-file .env -f compose.production.yaml up -d
 ```
 
-Le service `cron` est inclus : il récupère automatiquement les documents signés. Les volumes `nextcloud` et `db` doivent être sauvegardés avant une mise à jour.
+The `cron` service is included and automatically retrieves signed documents. Back up the `nextcloud` and `db` volumes before an upgrade.
 
-## Développement local
+## Local development
 
-1. Copier ce dossier sous `<nextcloud>/custom_apps/ngsign` (ou l’archiver, puis l’installer depuis **Apps → Vos apps**).
-2. Activer **NGSign** dans Apps.
-3. Dans **Administration → Paramètres supplémentaires → NGSign**, saisir l’URL du serveur NGSign et le bearer token de votre tenant.
+1. Copy this directory to `<nextcloud>/custom_apps/ngsign` (or archive it and install it from **Apps → Your apps**).
+2. Enable **NGSign** in Apps.
+3. Under **Administration → Additional settings → NGSign**, enter the NGSign server URL and your tenant’s bearer token.
 
-Par défaut, l’URL vise le sandbox : `https://sandbox.ng-sign.com/server`.
+By default, the URL targets the sandbox: `https://sandbox.ng-sign.com/server`.
 
-L’image est basée sur `nextcloud:34.0.4-apache` et l’application déclare sa compatibilité Nextcloud **30 à 34**. Nextcloud 34 est la version retenue pour l’image publiée ; l’image est épinglée, afin qu’une reconstruction ne change pas implicitement de version.
+The image is based on `nextcloud:34.0.4-apache`, and the app declares compatibility with Nextcloud **30 through 34**. Nextcloud 34 is the version used for the published image; the image is pinned so rebuilding does not implicitly change its version.
 
-### Démarrage local
+### Local startup
 
 ```sh
 cp .env.example .env
-# Éditer .env : remplacer les trois mots de passe et, si nécessaire, NGSIGN_API_TOKEN.
+# Edit .env: replace the three passwords and, if needed, NGSIGN_API_TOKEN.
 docker compose up --build -d
 ```
 
-Ouvrir `http://localhost:8080`. L’application est activée automatiquement au démarrage et les variables `NGSIGN_BASE_URL` et `NGSIGN_API_TOKEN` sont injectées côté serveur. Ne mettez jamais le token dans le Dockerfile ou dans une image publiée.
+Open `http://localhost:8080`. The app is automatically enabled at startup, and the `NGSIGN_BASE_URL` and `NGSIGN_API_TOKEN` variables are injected server-side. Never put the token in the Dockerfile or in a published image.
 
-### Publication Docker Hub
+### Docker Hub publishing
 
-Le workflow [docker-publish.yml](.github/workflows/docker-publish.yml) publie une image multi-architecture (`linux/amd64`, `linux/arm64`) lorsqu’un tag Git `v*` est poussé. Créer les secrets GitHub suivants :
+The [docker-publish.yml](.github/workflows/docker-publish.yml) workflow publishes a multi-architecture image (`linux/amd64`, `linux/arm64`) when a `v*` Git tag is pushed. Create the following GitHub secrets:
 
-- `DOCKERHUB_USERNAME` — votre identifiant Docker Hub ;
-- `DOCKERHUB_TOKEN` — un access token Docker Hub avec droit d’écriture.
+- `DOCKERHUB_USERNAME` — your Docker Hub username;
+- `DOCKERHUB_TOKEN` — a Docker Hub access token with write permission.
 
-Puis exécuter :
+Then run:
 
 ```sh
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-L’image sera publiée sous `<DOCKERHUB_USERNAME>/nextcloud-ngsign:0.1.0` et `:latest`.
+The image will be published as `<DOCKERHUB_USERNAME>/nextcloud-ngsign:0.1.0` and `:latest`.
 
-## Flux NGSign implémenté
+## Implemented NGSign flow
 
-1. `POST /protected/transaction/pdfs` avec le PDF en Base64.
-2. `POST /protected/transaction/{transactionId}/launch` avec un `sigConf` par signataire : signature `CERTIFIED_TIMESTAMP`, mode `BY_MAIL`, OTP `NONE`.
-3. `GET /any/transaction/{transactionId}` pour lire le statut de la transaction et l'état de chaque signataire (utilisé par le bouton **Check status** et par le cron).
-4. `GET /any/transaction/{transactionId}/pdfs/{documentId}` pour récupérer le PDF signé une fois la transaction au statut `SIGNED`.
-5. `POST /protected/transaction/{transactionId}/cancel` pour annuler une transaction qui n'est pas encore signée.
+1. `POST /protected/transaction/pdfs` with the PDF encoded as Base64.
+2. `POST /protected/transaction/{transactionId}/launch` with one `sigConf` per signer: `CERTIFIED_TIMESTAMP` signature, `BY_MAIL` mode, and `NONE` OTP.
+3. `GET /any/transaction/{transactionId}` to read the transaction status and the status of each signer (used by the **Check status** button and the cron job).
+4. `GET /any/transaction/{transactionId}/pdfs/{documentId}` to retrieve the signed PDF once the transaction reaches `SIGNED` status.
+5. `POST /protected/transaction/{transactionId}/cancel` to cancel a transaction that has not yet been signed.
 
-Le bearer token n’est jamais exposé au navigateur. Le contrôleur lit le fichier depuis l’espace du seul utilisateur connecté avant de le transmettre à NGSign.
+The bearer token is never exposed to the browser. Before sending the file to NGSign, the controller reads it from the connected user’s own storage.
 
-La durée d'expiration est configurable dans les paramètres NGSign (15 jours par défaut). Elle est envoyée à NGSign avec `expirationDate`; le cron local cesse aussi tout polling après cette date et supprime la transaction expirée de son suivi local.
+The expiration period is configurable in the NGSign settings (15 days by default). It is sent to NGSign as `expirationDate`; the local cron job also stops polling after that date and removes the expired transaction from local tracking.
 
-## Page Transactions
+## Transactions page
 
-Accessible depuis l'entrée de navigation **NGSign** (`/apps/ngsign/transactions`), cette page liste les transactions de signature lancées par l'utilisateur connecté :
+Available from the **NGSign** navigation entry (`/apps/ngsign/transactions`), this page lists the signature transactions started by the connected user:
 
-- **Statistiques** : total, en cours, signées.
-- **Tableau** : document, statut (avec badge coloré Pending/Signed/Refused/Cancelled), liste des signataires avec leur statut individuel et le prochain signataire attendu, date de création, date d'expiration, actions.
-- **Pagination** : 10 transactions par page, la plus récente en premier.
-- **Actions par ligne** :
-  - **Check status** — interroge NGSign en direct ; se désactive une fois la transaction `SIGNED`.
-  - **Cancel** — annule la transaction auprès de NGSign ; disponible tant que le statut n'est ni `SIGNED` ni `CANCELLED`, avec confirmation avant l'appel.
-  - **Download** — actif uniquement une fois le PDF signé effectivement récupéré depuis NGSign (voir cron ci-dessous).
+- **Statistics**: total, in progress, signed.
+- **Table**: document, status (with a colored Pending/Signed/Refused/Cancelled badge), signers with their individual statuses and the next expected signer, creation date, expiration date, and actions.
+- **Pagination**: 10 transactions per page, newest first.
+- **Row actions**:
+  - **Check status** — queries NGSign live; disabled once the transaction is `SIGNED`.
+  - **Cancel** — cancels the transaction in NGSign; available while the status is neither `SIGNED` nor `CANCELLED`, with confirmation before the request.
+  - **Download** — enabled only after the signed PDF has actually been retrieved from NGSign (see the cron job below).
 
-Le service `TransactionSyncService` (`lib/Service/TransactionSyncService.php`) centralise la logique appelée à la fois par le bouton **Check status** et par le cron : rafraîchir le statut et les signataires, télécharger et renommer le PDF signé (`signed_<nom original>`) dès que la transaction passe à `SIGNED`, puis notifier le créateur.
+The `TransactionSyncService` (`lib/Service/TransactionSyncService.php`) centralizes the logic called by both the **Check status** button and the cron job: refresh the transaction and signer statuses, download and rename the signed PDF (`signed_<original name>`) as soon as the transaction reaches `SIGNED`, then notify its creator.
 
 ### Notifications
 
-Dès qu'une transaction passe au statut `SIGNED`, le créateur reçoit une notification Nextcloud (cloche + centre de notifications) l'invitant à consulter le document signé, avec lien direct vers la page Transactions. L'envoi est unique par transaction (marqueur `notifiedAt` interne), qu'il soit déclenché par un check manuel ou par le cron.
+As soon as a transaction reaches `SIGNED` status, its creator receives a Nextcloud notification (bell and notification center) inviting them to view the signed document, with a direct link to the Transactions page. It is sent only once per transaction (through the internal `notifiedAt` marker), whether triggered by a manual check or the cron job.
 
-### Diagnostic NGSign
+### NGSign diagnostics
 
-Dans **Administration → Paramètres supplémentaires → NGSign**, activez **Debug mode** puis enregistrez. Après chaque lancement, la fenêtre de signature affiche les requêtes et réponses NGSign. Le token est masqué et le contenu Base64 du PDF n'est jamais affiché (seule sa taille est indiquée). Désactivez ce mode après le diagnostic.
+Under **Administration → Additional settings → NGSign**, enable **Debug mode** and save. After each launch, the signing window displays NGSign requests and responses. The token is masked, and the PDF’s Base64 contents are never displayed (only its size is shown). Disable this mode after diagnostics are complete.
 
-## À adapter selon votre tenant
+## Tenant-specific adjustments
 
-La position de signature initiale reprend la collection Postman fournie : page 1, `xAxis: 81`, `yAxis: 44.28125`. Si l’API de votre tenant renvoie un format différent (upload, statut, annulation…), ajuster les appels et l'extraction des identifiants dans `lib/Service/NGSignClient.php`.
+The initial signature position follows the supplied Postman collection: page 1, `xAxis: 81`, `yAxis: 44.28125`. If your tenant’s API returns a different format (upload, status, cancellation, and so on), adjust the requests and identifier extraction in `lib/Service/NGSignClient.php`.
