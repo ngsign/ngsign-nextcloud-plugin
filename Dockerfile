@@ -10,6 +10,7 @@ COPY --chown=www-data:www-data appinfo/ /usr/src/nextcloud/custom_apps/ngsign/ap
 COPY --chown=www-data:www-data lib/ /usr/src/nextcloud/custom_apps/ngsign/lib/
 COPY --chown=www-data:www-data js/ /usr/src/nextcloud/custom_apps/ngsign/js/
 COPY --chown=www-data:www-data css/ /usr/src/nextcloud/custom_apps/ngsign/css/
+COPY --chown=www-data:www-data img/ /usr/src/nextcloud/custom_apps/ngsign/img/
 COPY --chown=www-data:www-data l10n/ /usr/src/nextcloud/custom_apps/ngsign/l10n/
 COPY --chown=www-data:www-data templates/ /usr/src/nextcloud/custom_apps/ngsign/templates/
 COPY docker/hooks/before-starting/10-ngsign.sh /docker-entrypoint-hooks.d/before-starting/10-ngsign.sh

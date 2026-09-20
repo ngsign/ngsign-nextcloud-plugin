@@ -30,7 +30,7 @@ class Application extends App implements IBootstrap {
 		$context->getServerContainer()->get(IJobList::class)->add(SyncSignedTransactionsJob::class);
 		$context->getServerContainer()->get(INavigationManager::class)->add(function () use ($context): array {
 			$urlGenerator = $context->getServerContainer()->get(\OCP\IURLGenerator::class);
-			return ['id' => 'ngsign', 'order' => 90, 'href' => $urlGenerator->linkToRoute('ngsign.transactions.index'), 'icon' => $urlGenerator->imagePath('core', 'actions/edit.svg'), 'name' => 'NGSign'];
+			return ['id' => 'ngsign', 'order' => 90, 'href' => $urlGenerator->linkToRoute('ngsign.transactions.index'), 'icon' => $urlGenerator->imagePath('ngsign', 'app.svg'), 'name' => 'NGSign'];
 		});
 	}
 }
