@@ -111,3 +111,11 @@ Under **Administration → Additional settings → NGSign**, enable **Debug mode
 ## Tenant-specific adjustments
 
 The initial signature position follows the supplied Postman collection: page 1, `xAxis: 81`, `yAxis: 44.28125`. If your tenant’s API returns a different format (upload, status, cancellation, and so on), adjust the requests and identifier extraction in `lib/Service/NGSignClient.php`.
+
+## License
+
+GNU General Public License v3.0 (see LICENSE).
+
+This plugin integrates with Maarch Courrier, itself distributed under GPLv3: it extends its classes and runs inside its process (a derivative work).
+
+Copyright © 2026 NG Technologies. This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License version 3 as published by the Free Software Foundation.
