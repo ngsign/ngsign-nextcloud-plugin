@@ -62,22 +62,6 @@ docker compose up --build -d
 
 Open `http://localhost:8080`. The app is automatically enabled at startup, and the `NGSIGN_BASE_URL` and `NGSIGN_API_TOKEN` variables are injected server-side. Never put the token in the Dockerfile or in a published image.
 
-### Docker Hub publishing
-
-The [docker-publish.yml](.github/workflows/docker-publish.yml) workflow publishes a multi-architecture image (`linux/amd64`, `linux/arm64`) when a `v*` Git tag is pushed. Create the following GitHub secrets:
-
-- `DOCKERHUB_USERNAME` — your Docker Hub username;
-- `DOCKERHUB_TOKEN` — a Docker Hub access token with write permission.
-
-Then run:
-
-```sh
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-The image will be published as `<DOCKERHUB_USERNAME>/nextcloud-ngsign:0.1.0` and `:latest`.
-
 ## Implemented NGSign flow
 
 1. `POST /protected/transaction/pdfs` with the PDF encoded as Base64.
