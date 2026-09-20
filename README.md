@@ -2,6 +2,10 @@
 
 This app adds the **Sign with NGSign** action to PDFs in the Files app. The user selects the action, enters one or more signers, and the Nextcloud server sends the document to NGSign and starts a `BY_MAIL` transaction.
 
+## About NGSign
+
+[NGSign](https://www.ng-sign.com) is an electronic-signature platform. This plugin connects Nextcloud to NGSign so users can initiate and track PDF-signing transactions directly from their Nextcloud workspace.
+
 ## Deliverables
 
 | Deliverable | Purpose |
