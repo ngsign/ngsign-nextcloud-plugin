@@ -6,6 +6,14 @@ This app adds the **Sign with NGSign** action to PDFs in the Files app. The user
 
 [NGSign](https://www.ng-sign.com) is an electronic-signature platform. This plugin connects Nextcloud to NGSign so users can initiate and track PDF-signing transactions directly from their Nextcloud workspace.
 
+## Nextcloud prerequisites
+
+- **Nextcloud version**: 30 to 34 (see `min-version`/`max-version` in `appinfo/info.xml`; installation is refused outside this range). The published Docker image runs Nextcloud 34.0.4 on PHP 8.5.10 — for any other Nextcloud version, use the PHP version that Nextcloud itself requires.
+- **Files app** enabled (the default) — the "Sign with NGSign" action is added to it.
+- **Background jobs (cron)** configured and running — signed-document retrieval and creator notifications depend on it (see [Transactions page](#transactions-page)).
+- **Admin access** to **Administration → Additional settings → NGSign**, to configure the NGSign base URL and API token before any user can launch a signature.
+- A valid **NGSign account/tenant** with an API bearer token (sandbox or production).
+
 ## Deliverables
 
 | Deliverable | Purpose |
@@ -64,7 +72,7 @@ Open `http://localhost:8080`. The app is automatically enabled at startup, and t
 
 ### Docker Hub publishing
 
-The [docker-publish.yml](.github/workflows/docker-publish.yml) workflow publishes a multi-architecture image (`linux/amd64`, `linux/arm64`) when a `v*` Git tag is pushed. Create the following GitHub secrets:
+The [docker-publish.yml](.github/workflows/docker-publish.yml) workflow publishes a multi-architecture image (`linux/amd64`, `linux/arm64`) when a `v*` Git tag is pushed. The job runs under the **`NGSign`** GitHub Environment (Settings → Environments → New environment → name it `NGSign`), so the two values below must be created there — as **environment secrets**, not repository secrets and not environment *variables* (the workflow reads them through the `secrets.` context):
 
 - `DOCKERHUB_USERNAME` — your Docker Hub username;
 - `DOCKERHUB_TOKEN` — a Docker Hub access token with write permission.
