@@ -5,7 +5,7 @@
     <name>NGSign</name>
     <summary>Send PDF files to NGSign for electronic signature</summary>
     <description>Adds a Sign with NGSign action to PDF files in Nextcloud Files.</description>
-    <version>0.1.0</version>
+    <version>1.0.0</version>
     <licence>AGPL</licence>
     <author>NGSign</author>
     <namespace>NGSign</namespace>

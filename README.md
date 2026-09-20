@@ -40,7 +40,7 @@ The web-server user must be able to read the directory. Under **Administration â
 Create a `.env` file from `.env.example`, defining at least the passwords, `NEXTCLOUD_TRUSTED_DOMAINS`, and the desired image:
 
 ```sh
-IMAGE_NAME=<dockerhub-user>/nextcloud-ngsign:0.1.0
+IMAGE_NAME=<dockerhub-user>/nextcloud-ngsign:1.0.0
 docker compose --env-file .env -f compose.production.yaml up -d
 ```
 

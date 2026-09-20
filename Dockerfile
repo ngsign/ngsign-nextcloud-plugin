@@ -3,7 +3,7 @@ FROM nextcloud:34.0.4-apache
 
 LABEL org.opencontainers.image.title="Nextcloud with NGSign" \
 	org.opencontainers.image.description="Nextcloud 34 with the NGSign PDF signature app" \
-	org.opencontainers.image.source="https://github.com/REPLACE_WITH_YOUR_ORG/ngsign-nextcloud-plugin"
+	org.opencontainers.image.source="https://github.com/ngsign/ngsign-nextcloud-plugin/"
 
 # /usr/src/nextcloud is copied to /var/www/html by the upstream entrypoint on first run.
 COPY --chown=www-data:www-data appinfo/ /usr/src/nextcloud/custom_apps/ngsign/appinfo/
