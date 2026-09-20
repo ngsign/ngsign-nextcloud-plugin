@@ -2,36 +2,6 @@
 
 This app adds the **Sign with NGSign** action to PDFs in the Files app. The user selects the action, enters one or more signers, and the Nextcloud server sends the document to NGSign and starts a `BY_MAIL` transaction.
 
-## About NGSign
-
-[**NGSign**](https://www.ng-sign.com) is an electronic-signature platform that makes it simple and fast to sign documents and have them signed through a modern web application and a universal API. This plugin connects Nextcloud to NGSign so users can initiate and track PDF-signing transactions directly from their Nextcloud workspace. Signatures carry evidentiary value and the same legal weight as a handwritten signature, with strong guarantees of integrity, authenticity, and non-repudiation.
-
-NGSign is available as a SaaS service at [ngsign.app](https://ngsign.app), and is compliant with ETSI standards. It can also be deployed as a private, secure **Cloud** service, installed **on-premises** on your own servers for full control of your data, or run in a **hybrid Cloud** model.
-
-### Services
-
-#### Electronic signature
-
-Sign and request signatures on your documents from anywhere, using the NGSign web application or by integrating the NGSign API into your own software. [Learn more](https://www.ng-sign.com/application/)
-
-#### Visible electronic stamp (CEV)
-
-Apply a visible electronic stamp to your documents, based on a signed QR code compliant with the 2D-Doc and ISO standards. It lets anyone verify a document's origin and integrity at a glance. [Learn more](https://www.ng-sign.com/cev/)
-
-### About the company
-
-NGSign is developed by **NG Technologies**, a specialist in electronic signature and public key infrastructure (PKI) based in Tunis, Tunisia. The company publishes the first web-based electronic signature platform in Africa, and its trust services portfolio also includes **QRSecure** (electronic stamps) and **Remote Trust PKI** (certificate management). Its solutions are used by banks, insurers, public institutions, and large organizations across several countries.
-
-### Resources
-
-- Website: [www.ng-sign.com](https://www.ng-sign.com)
-- API reference: [ng-sign.com/api-reference-simple-version](https://www.ng-sign.com/api-reference-simple-version/)
-- Release notes: [ng-sign.com/ngsign-releases-notes](https://www.ng-sign.com/ngsign-releases-notes/)
-- Service status: [uptime.ng-sign.com](https://uptime.ng-sign.com/status/external)
-- Contact: [contact@ng-sign.com](mailto:contact@ng-sign.com) · Sales: [sales@ng-sign.com](mailto:sales@ng-sign.com)
-
-*NGSign is a product of NG Technologies. © 2026 NG Technologies.*
-
 ## Nextcloud prerequisites
 
 - **Nextcloud version**: 30 to 34 (see `min-version`/`max-version` in `appinfo/info.xml`; installation is refused outside this range). The published Docker image runs Nextcloud 34.0.4 on PHP 8.5.10 — for any other Nextcloud version, use the PHP version that Nextcloud itself requires.
@@ -39,6 +9,7 @@ NGSign is developed by **NG Technologies**, a specialist in electronic signature
 - **Background jobs (cron)** configured and running — signed-document retrieval and creator notifications depend on it (see [Transactions page](#transactions-page)).
 - **Admin access** to **Administration → Additional settings → NGSign**, to configure the NGSign base URL and API token before any user can launch a signature.
 - A valid **NGSign account/tenant** with an API bearer token (sandbox or production).
+
 ## Deliverables
 
 | Deliverable | Purpose |
@@ -147,6 +118,36 @@ Under **Administration → Additional settings → NGSign**, enable **Debug mode
 ## Tenant-specific adjustments
 
 The initial signature position follows the supplied Postman collection: page 1, `xAxis: 81`, `yAxis: 44.28125`. If your tenant’s API returns a different format (upload, status, cancellation, and so on), adjust the requests and identifier extraction in `lib/Service/NGSignClient.php`.
+
+## About NGSign
+
+[**NGSign**](https://www.ng-sign.com) is an electronic-signature platform that makes it simple and fast to sign documents and have them signed through a modern web application and a universal API. This plugin connects Nextcloud to NGSign so users can initiate and track PDF-signing transactions directly from their Nextcloud workspace. Signatures carry evidentiary value and the same legal weight as a handwritten signature, with strong guarantees of integrity, authenticity, and non-repudiation.
+
+NGSign is available as a SaaS service at [ngsign.app](https://ngsign.app), and is compliant with ETSI standards. It can also be deployed as a private, secure **Cloud** service, installed **on-premises** on your own servers for full control of your data, or run in a **hybrid Cloud** model.
+
+### Services
+
+#### Electronic signature
+
+Sign and request signatures on your documents from anywhere, using the NGSign web application or by integrating the NGSign API into your own software. [Learn more](https://www.ng-sign.com/application/)
+
+#### Visible electronic stamp (CEV)
+
+Apply a visible electronic stamp to your documents, based on a signed QR code compliant with the 2D-Doc and ISO standards. It lets anyone verify a document's origin and integrity at a glance. [Learn more](https://www.ng-sign.com/cev/)
+
+### About the company
+
+NGSign is developed by **NG Technologies**, a specialist in electronic signature and public key infrastructure (PKI) based in Tunis, Tunisia. The company publishes the first web-based electronic signature platform in Africa, and its trust services portfolio also includes **QRSecure** (electronic stamps) and **Remote Trust PKI** (certificate management). Its solutions are used by banks, insurers, public institutions, and large organizations across several countries.
+
+### Resources
+
+- Website: [www.ng-sign.com](https://www.ng-sign.com)
+- API reference: [ng-sign.com/api-reference-simple-version](https://www.ng-sign.com/api-reference-simple-version/)
+- Release notes: [ng-sign.com/ngsign-releases-notes](https://www.ng-sign.com/ngsign-releases-notes/)
+- Service status: [uptime.ng-sign.com](https://uptime.ng-sign.com/status/external)
+- Contact: [contact@ng-sign.com](mailto:contact@ng-sign.com) · Sales: [sales@ng-sign.com](mailto:sales@ng-sign.com)
+
+*NGSign is a product of NG Technologies. © 2026 NG Technologies.*
 
 ## License
 
